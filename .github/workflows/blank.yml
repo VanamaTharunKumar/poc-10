@@ -1,4 +1,4 @@
-name: NodeJS CI/CD
+name: POC-10 EC2 CI/CD Deploy
 
 on:
   push:
@@ -10,26 +10,48 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
+      # Step 1 - Checkout repo
+      - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '20'
-
-      - name: Install dependencies
-        run: npm install
-
-     
-
-      - name: Deploy to EC2
-        uses: appleboy/ssh-action@v0.1.9
+      # Step 2 - SSH into EC2 and deploy
+      - name: Deploy to EC2 via SSH
+        uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.EC2_HOST }}
-          username: ubuntu
-          key: ${{ secrets.EC2_KEY }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          port: 22
           script: |
-            cd /home/ubuntu/poc-10
-            git pull
-            pm2 restart all || pm2 start index.js --name "poc-10"
+            echo "Connected to EC2"
+
+            # Create a app dir, if exists mkdir does nothing like no error
+            sudo mkdir -p /home/ubuntu/poc-10
+
+            # CHOWN of that app
+            sudo chown ${{ secrets.EC2_USER }}:${{ secrets.EC2_USER }} /home/ubuntu/poc-10
+
+            # Go to the app dir
+            cd /home/ubuntu/poc-10 || exit 1
+
+
+            # check if .git is there in the app
+            if [ -d .git ]; then
+                echo "Git repo found!"
+                echo "Pulling latest changes"
+
+                git pull
+            else
+                echo "Git repo not found!"
+                echo "Cloning the repo"
+
+                git clone "https://github.com/VanamaTharunKumar/poc-10.git" .
+            fi
+
+            echo "Installing npm..."
+            npm i
+
+            echo "Starting/Reloading PM2"
+            pm2 start index.js || pm2 reload index.js
+
+            echo "Deployment Completed Succesfully"
