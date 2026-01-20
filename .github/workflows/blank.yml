@@ -31,7 +31,7 @@ jobs:
           username: ubuntu
           key: ${{ secrets.EC2_KEY }}
           script: |
-            cd /home/ubuntu/<your-repo>
+            cd /home/ubuntu/poc10
             git pull
             npm install
-            pm2 restart all || pm2 start index.js --name "<your-app-name>"
+            pm2 restart all || pm2 start index.js --name "poc10"
