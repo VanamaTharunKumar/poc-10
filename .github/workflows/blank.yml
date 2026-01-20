@@ -32,5 +32,4 @@ jobs:
           script: |
             cd /home/ubuntu/poc-10
             git pull
-            npm install
-            pm2 restart all || pm2 start index.js --name "poc10"
+            pm2 restart all || pm2 start index.js --name "poc-10"
