@@ -52,6 +52,8 @@ jobs:
             npm i
 
             echo "Starting/Reloading PM2"
-            pm2 start index.js || pm2 reload index.js
+              pm2 reload poc-10 || pm2 start index.js --name poc-10
+              pm2 save
+
 
             echo "Deployment Completed Succesfully"
